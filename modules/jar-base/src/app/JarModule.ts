@@ -27,5 +27,19 @@ export default class JarModule {
     protected registerRoutes(router: e.Router) {
         throw new Error("Module must implement registerRoutes()");
     }
+
+    protected action(action: any, actionInstance?: any): e.Handler {
+        return function (req: e.Request, resp: e.Response, next: e.NextFunction) {
+            const result = action.call(actionInstance, req, resp);
+
+            if (!result) {
+                return next(new Error("No controller response"));
+            }
+
+            // todo: more controller handling?
+
+            resp.send(JSON.stringify(result));
+        };
+    }
 }
 

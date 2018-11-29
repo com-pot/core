@@ -7,12 +7,27 @@ export default class SignController {
         this.attempts = 0;
     }
 
-    public useCredentials(_req: e.Request, _res: e.Response, next: e.NextFunction) {
+    public useCredentials(req: e.Request) {
         this.attempts++;
-        if(this.attempts % 2 === 0) {
+
+        if (req.user) {
+            return "Signed already";
+        }
+
+        if (this.attempts % 2 === 0) {
             throw new Error(`Not implemented, lol ${this.attempts}`);
         }
 
-        next();
+        return "Sorta ok " + this.attempts;
+    }
+
+    public blaze(req: e.Request, resp: e.Response) {
+        resp.status(420);
+        resp.statusMessage = "Enhance your calm";
+
+        return {
+            amount: 2 + (++this.attempts * 926) % 3 + ((6 * this.attempts) * 7) % 5,
+            unit: "g"
+        };
     }
 }

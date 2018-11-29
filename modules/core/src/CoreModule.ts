@@ -27,11 +27,13 @@ export default class CoreModule extends JarBase.app.JarModule {
     protected registerRoutes(router: e.Router) {
         const signCtrl = this.controllers.sign;
 
-        router.post("/sign/in/credentials", signCtrl.useCredentials.bind(signCtrl));
+        router.post("/sign/in/credentials", this.action(signCtrl.useCredentials, signCtrl));
 
-        router.get("/b", (_req: e.Request, resp: e.Response) => {
-            resp.send("Hello world");
-        });
+        router.get("/blaze", this.action(signCtrl.blaze, signCtrl));
+
+        router.get("/sign/in/asdf", this.action(() => {
+            throw new Error("ASDF");
+        }));
 
         router.get("/stats", (_req: e.Request, resp: e.Response) => {
             logger.info("Stats start");
