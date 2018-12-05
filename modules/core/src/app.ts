@@ -1,7 +1,7 @@
 import e from "express";
 import JarBase from "../../jar-base";
 import logger from "./util/logger";
-
+import config from "../config";
 import mongoose from "mongoose";
 
 import passportConfig from "./auth/passport";
@@ -13,16 +13,15 @@ const passport = passportConfig.instance;
 const app = JarBase.app.ExpressFactory.create();
 
 // Connect to MongoDB
-const mongoUrl =  "mongodb://192.168.99.100:27017";
+const mongoUrl = config.get<string>("mongo");
 
 mongoose.Promise = Promise;
-mongoose.connect(mongoUrl, {useMongoClient: true}).then(
-    () => { /** ready to use. The `mongoose.connect()` promise resolves to undefined. */
-    },
-).catch((err: any) => {
-    logger.error("MongoDB connection error. Please make sure MongoDB is running. " + err);
-    // process.exit();
-});
+mongoose.connect(mongoUrl, {useMongoClient: true})
+    .then(() => logger.info("Mongoose is ready to use"))
+    .catch((err: any) => {
+        logger.error("MongoDB connection error: " + err);
+        // process.exit();
+    });
 
 app.use(passport.initialize());
 app.use((req: e.Request, res: e.Response, next: e.NextFunction) => {
