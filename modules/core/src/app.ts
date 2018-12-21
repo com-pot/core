@@ -1,27 +1,15 @@
 import e from "express";
 import JarBase from "../../jar-base";
-import logger from "./util/logger";
-import config from "../config";
-import mongoose from "mongoose";
 
-import passportConfig from "./auth/passport";
+import passportFactory from "./auth/PassportFactory";
+import authenticator from "./auth/Authenticator";
+import CoreModule from "./CoreModule";
 
-const passport = passportConfig.instance;
+const passport = passportFactory.getInstance();
 
 
 // Create Express server
 const app = JarBase.app.ExpressFactory.create();
-
-// Connect to MongoDB
-const mongoUrl = config.get<string>("mongo");
-
-mongoose.Promise = Promise;
-mongoose.connect(mongoUrl, {useMongoClient: true})
-    .then(() => logger.info("Mongoose is ready to use"))
-    .catch((err: any) => {
-        logger.error("MongoDB connection error: " + err);
-        // process.exit();
-    });
 
 app.use(passport.initialize());
 app.use((req: e.Request, res: e.Response, next: e.NextFunction) => {
@@ -29,12 +17,7 @@ app.use((req: e.Request, res: e.Response, next: e.NextFunction) => {
     next();
 });
 
-import Authenticator from "./models/Authenticator";
-
-app.use((new Authenticator()).findUserByToken);
-
-
-import CoreModule from "./CoreModule";
+app.use(authenticator.findUserByToken);
 
 const coreModule = new CoreModule();
 coreModule.start({

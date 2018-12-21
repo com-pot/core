@@ -1,64 +1,8 @@
 import bcrypt from "bcrypt";
-import crypto from "crypto";
-import mongoose from "mongoose";
+import { instanceMethod, pre, prop, Typegoose } from "typegoose";
+import mongooseConnection from "../util/mongooseConnection";
 
-export type UserModel = mongoose.Document & {
-    uniqueHandle: string;
-    email: string,
-    password: string,
-    passwordResetToken: string,
-    passwordResetExpires: Date,
-
-    facebook: string,
-    tokens: AuthToken[],
-
-    profile: {
-        name: string,
-        gender: string,
-        location: string,
-        website: string,
-        picture: string
-    },
-
-    comparePassword: comparePasswordFunction,
-    gravatar: (size: number) => string
-};
-
-
-type comparePasswordFunction = (candidatePassword: string, cb: (err: any, isMatch: any) => {}) => void;
-
-export interface AuthToken {
-    accessToken: string,
-    kind: string
-}
-
-const userSchema = new mongoose.Schema({
-    uniqueHandle: {type: String, unique: true},
-
-    email: {type: String, unique: true},
-    password: String,
-    passwordResetExpires: Date,
-    passwordResetToken: String,
-
-    facebook: String,
-    google: String,
-    twitter: String,
-
-    tokens: Array,
-
-    profile: {
-        gender: String,
-        location: String,
-        name: String,
-        picture: String,
-        website: String
-    }
-}, {timestamps: true});
-
-/**
- * Password hash middleware.
- */
-userSchema.pre("save", function save(this: UserModel, next) {
+@pre<User>("save", function preSave(next) {
     if (!this.isModified("password")) {
         return next();
     }
@@ -66,7 +10,8 @@ userSchema.pre("save", function save(this: UserModel, next) {
         if (err) {
             return next(err);
         }
-        bcrypt.hash(this.password, salt, (bErr: mongoose.Error, hash) => {
+
+        bcrypt.hash(this.password, salt, (bErr: Error, hash) => {
             if (bErr) {
                 return next(bErr);
             }
@@ -74,28 +19,52 @@ userSchema.pre("save", function save(this: UserModel, next) {
             next();
         });
     });
-});
+})
 
-const comparePassword: comparePasswordFunction = function (this: UserModel, candidatePassword, cb) {
-    bcrypt.compare(candidatePassword, this.password, (err: mongoose.Error, isMatch: boolean) => {
-        cb(err, isMatch);
-    });
-};
+export class User extends Typegoose {
+    @prop({required: true, unique: true, index: true})
+    uniqueHandle: string;
+    @prop()
+    email: string;
+    @prop()
+    password: string;
+    @prop()
+    passwordResetToken: string;
+    @prop()
+    passwordResetExpires: Date;
 
-userSchema.methods.comparePassword = comparePassword;
+    @prop()
+    facebook: string;
+    @prop()
+    tokens: AuthToken[];
 
-/**
- * Helper method for getting user's gravatar.
- */
-userSchema.methods.gravatar = function (size: number = 200) {
-    if (!this.email) {
-        return `https://gravatar.com/avatar/?s=${size}&d=retro`;
+    @prop()
+    profile: {
+        name: string,
+        gender: string,
+        location: string,
+        website: string,
+        picture: string
+    };
+
+    constructor(...args: any[]) {
+        super();
     }
-    const md5 = crypto.createHash("md5").update(this.email).digest("hex");
-    return `https://gravatar.com/avatar/${md5}?s=${size}&d=retro`;
-};
 
-// export const User: UserType = mongoose.model<UserType>('User', userSchema);
-const User = mongoose.model<UserModel>("User", userSchema);
+    @instanceMethod
+    comparePassword(candidatePassword: string, cb: (err: any, isMatch: any) => void) {
+        bcrypt.compare(candidatePassword, this.password, (err: Error, isMatch: boolean) => {
+            cb(err, isMatch);
+        });
+    }
+}
 
-export default User;
+
+interface AuthToken {
+    accessToken: string;
+    kind: string;
+}
+
+export const UserModel = new User().getModelForClass(User, {
+    existingConnection: mongooseConnection
+});

@@ -36,12 +36,13 @@
     "express-session": "^1.15.6",
     "express-validator": "^4.3.0",
     "lusca": "^1.6.1",
-    "mongoose": "^4.13.17",
+    "mongoose": "5.3.14",
     "nodemailer": "^4.7.0",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "request": "^2.88.0",
     "request-promise": "^4.2.2",
+    "typegoose": "^5.4.1",
     "winston": "^3.1.0"
   },
   "devDependencies": {
@@ -60,7 +61,7 @@
     "@types/jquery": "^3.3.22",
     "@types/lusca": "^1.5.0",
     "@types/mongodb": "^3.1.14",
-    "@types/mongoose": "^4.7.39",
+    "@types/mongoose": "^5.3.5",
     "@types/morgan": "^1.7.35",
     "@types/node": "^9.6.39",
     "@types/nodemailer": "^4.6.5",

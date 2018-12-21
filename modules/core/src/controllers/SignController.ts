@@ -21,13 +21,7 @@ export default class SignController {
         return "Sorta ok " + this.attempts;
     }
 
-    public blaze(req: e.Request, resp: e.Response) {
-        resp.status(420);
-        resp.statusMessage = "Enhance your calm";
+    public register(req: e.Request) {
 
-        return {
-            amount: 2 + (++this.attempts * 926) % 3 + ((6 * this.attempts) * 7) % 5,
-            unit: "g"
-        };
     }
 }
